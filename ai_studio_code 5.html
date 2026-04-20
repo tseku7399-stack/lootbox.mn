@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loot Box - Final Build</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { background-color: #0d0d0f; color: white; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 0.5px solid rgba(255, 255, 255, 0.1); }
+        #heroContainer { touch-action: pan-y; cursor: grab; }
+        #heroContainer:active { cursor: grabbing; }
+        #sliderTrack { display: flex; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); height: 100%; width: 100%; }
+        .slide { min-width: 100%; height: 100%; flex-shrink: 0; user-select: none; pointer-events: none; }
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.15s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .black-blur { background: rgba(0, 0, 0, 0.6) !important; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .uc-card { border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.2rem; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.1s; background: #16161a; }
+        .uc-card:active { transform: scale(0.95); }
+        .uc-card-top { background-color: rgba(255, 255, 255, 0.02); padding: 12px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .uc-card-bottom { background-color: rgba(255, 255, 255, 0.04); padding: 8px 12px; display: flex; justify-content: center; align-items: center; }
+        .uc-card-title { color: #ffffff; font-weight: 800; font-size: 0.85rem; }
+        .price-text { color: #82e022; font-weight: 900; font-size: 0.85rem; }
+        .selected-card { border-color: #82e022 !important; background: rgba(130, 224, 34, 0.05) !important; }
+        
+        .step-label { font-size: 11px; font-weight: 900; text-transform: uppercase; color: #6b7280; margin-bottom: 12px; padding-left: 4px; display: block; }
+
+        * { transition: transform 0.1s ease-out, opacity 0.1s ease-out, background-color 0.1s ease-out; }
+    </style>
+</head>
+<body class="p-4 md:p-10 max-w-7xl mx-auto">
+
+    <!-- Header (Sticky) -->
+    <nav class="flex items-center justify-between sticky top-0 z-[1000] bg-[#0d0d0f] py-4 mb-6 -mx-4 px-4 md:-mx-10 md:px-10">
+        <div id="backBtnContainer" class="hidden">
+            <button onclick="backToPubgMenu()" class="w-10 h-10 rounded-full border border-gray-700 bg-white/10 flex items-center justify-center cursor-pointer active:scale-90 shadow-lg text-white">
+                <i class="fa-solid fa-chevron-left text-sm"></i>
+            </button>
+        </div>
+        <div id="navSpacer" class="w-10"></div>
+        <div class="relative">
+            <button onclick="toggleMenu(event)" id="profileBtn" class="w-10 h-10 rounded-full border border-gray-700 bg-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20 active:scale-90 shadow-lg overflow-hidden text-lg font-black text-white relative z-[1001]"><i id="profileIcon" class="fa-solid fa-user text-gray-400"></i><span id="profileLetter" class="hidden uppercase font-black"></span></button>
+            <div id="profileMenu" class="hidden absolute right-0 mt-3 w-72 glass rounded-2xl p-6 z-[1001] shadow-2xl border border-white/10 fade-in text-left text-white">
+                <button onclick="menu.classList.add('hidden')" class="mb-4 text-white transition block text-left"><i class="fa-solid fa-arrow-left text-sm"></i></button>
+                <div id="step-initial">
+                    <button onclick="showStep('step-login')" class="w-full bg-white/10 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-white/20 active:scale-95 mb-3 transition">Нэвтрэх</button>
+                    <button onclick="showStep('step-signup-form')" class="w-full bg-white py-2.5 rounded-xl flex items-center justify-center space-x-2 hover:bg-gray-200 transition"><img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" class="w-4 h-4 mr-2"><span style="color: #000000; font-weight: 900;" class="text-sm font-black">Бүртгүүлэх</span></button>
+                </div>
+                <div id="step-login" class="hidden text-left">
+                    <h4 class="text-sm font-bold mb-4">Нэвтрэх</h4>
+                    <input type="email" id="loginEmail" placeholder="Gmail хаяг" class="w-full bg-[#1a1a1e] border border-gray-800 rounded-xl px-4 py-2.5 text-sm mb-3 focus:outline-none text-white"><input type="password" id="loginPassword" placeholder="Нууц үг" class="w-full bg-[#1a1a1e] border border-gray-800 rounded-xl px-4 py-2.5 text-sm mb-4 focus:outline-none text-white"><button onclick="handleLogin()" class="w-full bg-white text-black py-2.5 rounded-xl text-sm font-bold active:scale-95 transition">Нэвтрэх</button>
+                </div>
+                <div id="step-signup-form" class="hidden text-left">
+                    <h4 class="text-sm font-bold mb-4">Бүртгэл үүсгэх</h4>
+                    <input type="email" id="signupEmailInput" placeholder="Gmail хаяг" class="w-full bg-[#1a1a1e] border border-gray-800 rounded-xl px-4 py-2.5 text-sm mb-3 focus:outline-none text-white"><input type="password" id="signupPassInput" placeholder="Шинэ нууц үг" class="w-full bg-[#1a1a1e] border border-gray-800 rounded-xl px-4 py-2.5 text-sm mb-4 focus:outline-none text-white"><button onclick="startSignup()" class="w-full bg-white text-black py-2.5 rounded-xl text-sm font-bold active:scale-95 transition">Бүртгүүлэх</button>
+                </div>
+                <div id="step-signup-otp" class="hidden text-center fade-in">
+                    <h4 class="text-xs font-bold mb-4 text-gray-300">Таны <span id="otpEmailDisplay" class="text-white font-black underline"></span> хаягт ирсэн кодыг оруулна уу.</h4><input type="text" maxlength="6" placeholder="000000" class="w-full bg-[#1a1a1e] border border-gray-800 rounded-xl px-4 py-2.5 text-center text-xl font-bold mb-4 text-white tracking-[0.4em] focus:outline-none"><button onclick="showStep('step-success')" class="w-full bg-white text-black py-2.5 rounded-xl text-sm font-bold active:scale-95 transition">Баталгаажуулах</button>
+                </div>
+                <div id="step-success" class="hidden text-center">
+                    <h4 class="text-sm font-bold mb-4 text-green-500 leading-relaxed text-xs">Бүртгэл амжилттай.</h4><button onclick="showStep('step-login')" class="w-full bg-white text-black py-2.5 rounded-xl text-sm font-bold active:scale-95 transition">Нэвтрэх</button>
+                </div>
+                <div id="step-logged-in" class="hidden text-left text-white">
+                    <h4 class="text-[10px] font-black uppercase mb-4 tracking-widest text-white profile-title text-left">Миний профайл</h4>
+                    <div class="space-y-3 text-left"><div class="profile-item black-blur p-3 rounded-xl border border-white/5 transition-transform text-left"><p class="text-[9px] text-white font-bold uppercase mb-1 opacity-60 text-left">Gmail хаяг</p><p id="displayEmail" class="text-xs font-black truncate text-white text-left"></p></div><button onclick="handleLogout()" class="w-full mt-4 text-red-500 text-[10px] font-black py-2.5 border border-red-500/20 rounded-xl hover:bg-red-500/10 active:scale-95 transition uppercase text-xs">Гарах</button></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Banner -->
+    <div id="heroContainer" class="relative w-full aspect-[2/1] rounded-2xl overflow-hidden mb-16 shadow-2xl group bg-black border border-white/5">
+        <div id="sliderTrack">
+            <img src="https://i.ebayimg.com/images/g/hWgAAOSwddZlIYW~/s-l1200.jpg" class="slide object-cover">
+            <img src="https://mgl.gogo.mn/newsn/images/ck/2024/10/29/Medee_zurag-102537-1715675232.jpeg" class="slide object-cover">
+            <img src="https://i.ytimg.com/vi/zowmaH7hc5Q/maxresdefault.jpg" class="slide object-cover">
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0d0d0f]/60 to-transparent pointer-events-none z-20"></div>
+        <div id="counter" class="absolute top-2 right-2 glass px-2 py-0.5 rounded-full text-[8px] font-black text-gray-300 z-30">1 / 3</div>
+        <button onclick="prevSlide(true)" class="absolute left-2 bottom-2 glass w-8 h-8 rounded-full flex items-center justify-center text-white opacity-80 z-40 transition hover:opacity-100 active:scale-75 shadow-lg"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
+        <button onclick="nextSlide(true)" class="absolute right-2 bottom-2 glass w-8 h-8 rounded-full flex items-center justify-center text-white opacity-80 z-40 transition hover:opacity-100 active:scale-75 shadow-lg"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
+    </div>
+
+    <!-- MAIN VIEW -->
+    <div id="mainGamesView" class="fade-in">
+        <div class="flex items-center justify-between mb-10 px-1 text-left">
+            <h3 class="text-xl font-bold text-gray-200 tracking-tighter">Тоглоомууд</h3>
+            <button onclick="showAllGames()" class="view-all-btn glass px-3.5 py-1.5 rounded-lg text-[10px] font-black hover:opacity-80 active:scale-90 transition flex items-center"><span>Бүгдийг харах</span><i class="fa-solid fa-chevron-right text-[8px] ml-1"></i></button>
+        </div>
+        <div class="grid grid-cols-2 gap-4 md:gap-8 mb-24 text-white text-left">
+            <div onclick="openPubgMenu()" class="game-card bg-[#1a1a1e] rounded-[1.5rem] overflow-hidden shadow-xl group border border-white/5 flex flex-col active:scale-95 transition-transform cursor-pointer"><div class="aspect-square w-full"><img src="https://upload.wikimedia.org/wikipedia/en/4/44/PlayerUnknown%27s_Battlegrounds_Mobile.webp" class="w-full h-full object-cover"></div><div class="p-3 pt-1.5 pb-3 relative flex-1 min-h-[50px] text-left text-white"><h4 class="font-bold text-[11px] md:text-sm uppercase tracking-tight leading-tight pt-1">Pubg Mobile</h4><div class="absolute bottom-0 right-0 w-8 h-8 md:w-10 md:h-10 glass flex items-center justify-center rounded-tl-2xl rounded-br-[1.5rem] border-none text-white transition"><i class="fa-solid fa-chevron-right text-[10px] md:text-xs"></i></div></div></div>
+            <div onclick="openMlbbMenu()" class="game-card bg-[#1a1a1e] rounded-[1.5rem] overflow-hidden shadow-xl group border border-white/5 flex flex-col active:scale-95 transition-transform cursor-pointer"><div class="aspect-square w-full"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjGrXZQoyfip2gmYpnC8pMPGdQ4JkBiRd9EBbQ3saBuQ&s=10" class="w-full h-full object-cover"></div><div class="p-3 pt-1.5 pb-3 relative flex-1 min-h-[50px] text-left text-white"><h4 class="font-bold text-[11px] md:text-sm uppercase tracking-tight leading-tight pt-1">Mobile Legends</h4><div class="absolute bottom-0 right-0 w-8 h-8 md:w-10 md:h-10 glass flex items-center justify-center rounded-tl-2xl rounded-br-[1.5rem] border-none text-white transition"><i class="fa-solid fa-chevron-right text-[10px] md:text-xs"></i></div></div></div>
+        </div>
+    </div>
+
+    <!-- ALL GAMES VIEW -->
+    <div id="allGamesView" class="hidden fade-in mb-24 text-left text-white">
+        <h3 class="text-lg font-bold text-white mb-10 px-1 text-left">Бүх тоглоомууд</h3>
+        <div class="grid grid-cols-2 gap-4 md:gap-8">
+            <div onclick="openPubgMenu()" class="game-card bg-[#1a1a1e] rounded-[1.5rem] overflow-hidden border border-white/5 active:scale-95 transition-transform cursor-pointer flex flex-col"><div class="aspect-square w-full"><img src="https://upload.wikimedia.org/wikipedia/en/4/44/PlayerUnknown%27s_Battlegrounds_Mobile.webp" class="w-full h-full object-cover"></div><div class="p-3"><h4 class="font-bold text-[11px] md:text-sm uppercase text-white">Pubg Mobile</h4></div></div>
+            <div onclick="openMlbbMenu()" class="game-card bg-[#1a1a1e] rounded-[1.5rem] overflow-hidden border border-white/5 active:scale-95 transition-transform cursor-pointer flex flex-col"><div class="aspect-square w-full"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjGrXZQoyfip2gmYpnC8pMPGdQ4JkBiRd9EBbQ3saBuQ&s=10" class="w-full h-full object-cover"></div><div class="p-3"><h4 class="font-bold text-[11px] md:text-sm uppercase text-white">Mobile Legends</h4></div></div>
+        </div>
+    </div>
+
+    <!-- PURCHASE VIEW -->
+    <div id="ucPurchaseView" class="hidden fade-in mb-24 text-left text-white">
+        <div class="text-center mb-12"><h2 id="purchaseTitle" class="uppercase font-black text-white text-sm tracking-widest">PUBG MOBILE UC</h2></div>
+        
+        <div class="mb-10"><span class="step-label">1. Мэдээллээ оруулна уу</span><div id="topIdInputs" class="space-y-3"></div></div>
+        <div class="mb-10"><span class="step-label" id="step2Title">2. Сонголт хийх</span><div id="itemsGrid" class="grid grid-cols-2 gap-3"></div></div>
+        <div id="step3Section" class="hidden fade-in mb-10"><span class="step-label">3. Холбоо барих мэдээлэл</span><div class="space-y-3"><div class="bg-[#1a1a1e] p-4 rounded-xl border border-gray-800"><label class="text-[9px] text-gray-500 uppercase font-black mb-1 block">Gmail хаяг</label><input type="email" placeholder="example@gmail.com" class="w-full bg-transparent focus:outline-none text-white text-sm font-bold"></div><div class="bg-[#1a1a1e] p-4 rounded-xl border border-gray-800"><label class="text-[9px] text-gray-500 uppercase font-black mb-1 block">Утасны дугаар</label><input type="tel" placeholder="99112233" class="w-full bg-transparent focus:outline-none text-white text-sm font-bold"></div></div></div>
+        <div id="step4Section" class="hidden fade-in mb-10"><span class="step-label">4. Төлбөрийн сонголт (Qpay)</span><button onclick="alert('Qpay холбогдож байна...')" class="w-full bg-yellow-500 text-black py-4 rounded-2xl font-black uppercase active:scale-95 transition shadow-lg">Үргэлжлүүлэх</button></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800/50 pt-16 pb-12 text-center text-gray-500">
+        <h3 class="text-sm font-black text-white uppercase mb-8">Холбоо Барих</h3>
+        <div class="flex justify-center space-x-6 mb-8"><a href="https://www.instagram.com/lootboxmn" target="_blank" class="glass w-12 h-12 rounded-2xl flex items-center justify-center hover:text-pink-500 active:scale-75 transition"><i class="fa-brands fa-instagram text-2xl"></i></a><a href="https://www.facebook.com/share/1626KmKyGj" target="_blank" class="glass w-12 h-12 rounded-2xl flex items-center justify-center hover:text-blue-500 active:scale-75 transition"><i class="fa-brands fa-facebook text-2xl"></i></a></div>
+        <p class="mt-10 text-[9px] uppercase tracking-widest font-medium">© 2024 Loot Box. Бүх эрх хуулиар хамгаалагдсан.</p>
+    </footer>
+
+    <script>
+        const menu = document.getElementById('profileMenu'), icon = document.getElementById('profileIcon'), letterSpan = document.getElementById('profileLetter'), banner = document.getElementById('heroContainer'), itemsGrid = document.getElementById('itemsGrid'), topIdInputs = document.getElementById('topIdInputs');
+        const backBtnContainer = document.getElementById('backBtnContainer'), navSpacer = document.getElementById('navSpacer');
+        let isLoggedIn = false, cur = 0;
+
+        const pubgItems = [
+            {amt:"30 UC", p:"1,800₮", img: "https://www.gameshop.mn/uc.png"}, 
+            {amt:"60 UC", p:"3,500₮", img: "https://cdn.midasbuy.com/images/level1.cb11b2cd.png"}, 
+            {amt:"325 UC", p:"18,000₮", img: "https://cdn.midasbuy.com/images/level2.f2b27a84.png"}, 
+            {amt:"660 UC", p:"36,000₮", img: "https://cdn.midasbuy.com/images/level3.6e2a3de7.png"},
+            {amt:"1800 UC", p:"90,000₮", img: "https://cdn.midasbuy.com/images/level4.5662a174.png"}, 
+            {amt:"3850 UC", p:"180,000₮", img: "https://cdn.midasbuy.com/images/level5.5a6a7af6.png"}, 
+            {amt:"8100 UC", p:"370,000₮", img: "https://cdn.midasbuy.com/images/level6.03ebac0d.png"}, 
+            {amt:"16200 UC", p:"700,000₮", img: "https://cdn.midasbuy.com/images/level6.03ebac0d.png"}
+        ];
+
+        const mlbbItems = [
+            {amt:"20 Diamonds", p:"2,500₮", img: "https://www.gameshop.mn/78.webp"}, 
+            {amt:"40 Diamonds", p:"4,000₮", img: "https://www.gameshop.mn/78.webp"}, 
+            {amt:"60 Diamonds", p:"6,000₮", img: "https://www.gameshop.mn/156.webp"}, 
+            {amt:"101 Diamonds", p:"8,000₮", img: "https://www.gameshop.mn/156.webp"}, 
+            {amt:"206 Diamonds", p:"15,000₮", img: "https://www.gameshop.mn/234.webp"}, 
+            {amt:"412 Diamonds", p:"28,500₮", img: "https://www.gameshop.mn/625.webp"}, 
+            {amt:"1049 Diamonds", p:"65,000₮", img: "https://www.gameshop.mn/1860.webp"}, 
+            {amt:"2132 Diamonds", p:"135,000₮", img: "https://www.gameshop.mn/3099.webp"}, 
+            {amt:"4299 Diamonds", p:"260,000₮", img: "https://www.gameshop.mn/4649.webp"}, 
+            {amt:"6502 Diamonds", p:"375,000₮", img: "https://www.gameshop.mn/7740.webp"}, 
+            {amt:"Weekly Pass", p:"11,000₮", img: "https://www.gameshop.mn/weekly.png"}
+        ];
+
+        function renderItems(list) {
+            itemsGrid.innerHTML = '';
+            list.forEach(i => {
+                const card = document.createElement('div');
+                card.className = 'uc-card';
+                card.onclick = function() { 
+                    document.querySelectorAll('.uc-card').forEach(c=>c.classList.remove('selected-card')); this.classList.add('selected-card'); 
+                    document.getElementById('step3Section').classList.remove('hidden'); document.getElementById('step4Section').classList.remove('hidden');
+                };
+                card.innerHTML = `<div class="uc-card-top"><span class="uc-card-title">${i.amt}</span><img src="${i.img}" class="w-16 h-12 object-contain my-2"></div><div class="uc-card-bottom"><span class="price-text">${i.p}</span></div>`;
+                itemsGrid.appendChild(card);
+            });
+        }
+
+        function openPubgMenu() { 
+            document.getElementById('purchaseTitle').innerText = "PUBG Mobile UC";
+            document.getElementById('step2Title').innerText = "2. UC сонголт";
+            topIdInputs.innerHTML = `<div class="bg-[#1a1a1e] p-4 rounded-xl border border-gray-800"><label class="text-[9px] text-gray-500 uppercase font-black mb-1 block">Character ID</label><input type="text" placeholder="Character ID" class="w-full bg-transparent focus:outline-none text-white text-sm font-bold"></div>`;
+            renderItems(pubgItems); commonOpen();
+        }
+
+        function openMlbbMenu() { 
+            document.getElementById('purchaseTitle').innerText = "Mobile Legends Diamonds";
+            document.getElementById('step2Title').innerText = "2. Diamonds сонголт";
+            topIdInputs.innerHTML = `<div class="grid grid-cols-2 gap-3"><div class="bg-[#1a1a1e] p-4 rounded-xl border border-gray-800"><label class="text-[9px] text-gray-500 uppercase font-black mb-1 block">User ID</label><input type="text" placeholder="User ID" class="w-full bg-transparent focus:outline-none text-white text-sm font-bold"></div><div class="bg-[#1a1a1e] p-4 rounded-xl border border-gray-800"><label class="text-[9px] text-gray-500 uppercase font-black mb-1 block">Zone ID</label><input type="text" placeholder="Zone ID" class="w-full bg-transparent focus:outline-none text-white text-sm font-bold"></div></div>`;
+            renderItems(mlbbItems); commonOpen();
+        }
+
+        function commonOpen() { banner.classList.add('hidden'); document.getElementById('mainGamesView').classList.add('hidden'); document.getElementById('allGamesView').classList.add('hidden'); document.getElementById('ucPurchaseView').classList.remove('hidden'); backBtnContainer.classList.remove('hidden'); navSpacer.classList.add('hidden'); document.getElementById('step3Section').classList.add('hidden'); document.getElementById('step4Section').classList.add('hidden'); window.scrollTo(0,0); }
+        function backToPubgMenu() { document.getElementById('ucPurchaseView').classList.add('hidden'); document.getElementById('allGamesView').classList.add('hidden'); document.getElementById('mainGamesView').classList.remove('hidden'); banner.classList.remove('hidden'); backBtnContainer.classList.add('hidden'); navSpacer.classList.remove('hidden'); }
+        function showAllGames() { banner.classList.add('hidden'); document.getElementById('mainGamesView').classList.add('hidden'); document.getElementById('allGamesView').classList.remove('hidden'); backBtnContainer.classList.remove('hidden'); navSpacer.classList.add('hidden'); window.scrollTo(0,0); }
+
+        function showStep(id) { ['step-initial','step-login','step-signup-form','step-signup-otp','step-success','step-logged-in'].forEach(s => { const el = document.getElementById(s); if(el) el.classList.add('hidden'); }); document.getElementById(id).classList.remove('hidden'); }
+        function toggleMenu(e) { e.stopPropagation(); menu.classList.toggle('hidden'); isLoggedIn ? showStep('step-logged-in') : showStep('step-initial'); }
+        function handleLogin() { const e = document.getElementById('loginEmail').value; if(e.trim()) { isLoggedIn = true; icon.classList.add('hidden'); letterSpan.innerText = e.charAt(0).toUpperCase(); letterSpan.classList.remove('hidden'); document.getElementById('displayEmail').innerText = e; menu.classList.add('hidden'); } }
+        function startSignup() { const email = document.getElementById('signupEmailInput').value; if(email.includes('@')) { document.getElementById('otpEmailDisplay').innerText = email; showStep('step-signup-otp'); } else { alert('Gmail хаягаа оруулна уу'); } }
+        function handleLogout() { isLoggedIn = false; icon.classList.remove('hidden'); letterSpan.classList.add('hidden'); menu.classList.add('hidden'); }
+        window.onclick = (e) => { if (!menu.contains(e.target) && !document.getElementById('profileBtn').contains(e.target)) menu.classList.add('hidden'); };
+
+        const track = document.getElementById('sliderTrack'), cTxt = document.getElementById('counter');
+        function updateSlider() { track.style.transform = `translateX(-${cur * 100}%)`; cTxt.innerText = `${cur + 1} / 3`; }
+        let slideInterval = setInterval(() => nextSlide(false), 4000);
+        function resetTimer() { clearInterval(slideInterval); slideInterval = setInterval(() => nextSlide(false), 4000); }
+        function nextSlide(man) { if(man) resetTimer(); cur = (cur + 1) % 3; updateSlider(); }
+        function prevSlide(man) { if(man) resetTimer(); cur = (cur - 1 + 3) % 3; updateSlider(); }
+
+        let startX = 0, isDragging = false;
+        banner.addEventListener('touchstart', (e) => { isDragging = true; startX = e.touches[0].clientX; }, { passive: true });
+        banner.addEventListener('touchend', (e) => { if (!isDragging) return; const diff = startX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) { if (diff > 0) nextSlide(true); else prevSlide(true); } isDragging = false; }, { passive: true });
+    </script>
+</body>
+</html>
