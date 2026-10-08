@@ -153,7 +153,8 @@ let db;
 try{db=JSON.parse(localStorage.getItem(KEY))}catch{db=null}
 if(!db||!Array.isArray(db.posts)){db=seed();save()}
 // Нэг удаа автоматаар нэмэгдэх пост (устгасан бол дахин нэмэгдэхгүй)
-const ONCE=[{id:'poster1',cat:'news',title:'Шинэ пост',body:'Энд мэдээгээ бичнэ үү.\n\nАдмин хэсгийн “Засах” товчоор гарчиг, агуулгыг өөрчилнө.',img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTLbUGmGi4Wi0l77JcJICAxHjR_hsenF4yViMfZ11zlpxtClI3jEYVBd4&s=10',link:'',t:Date.now()}];
+const ONCE=[{id:'poster1',cat:'news',title:'Шинэ пост',body:'Энд мэдээгээ бичнэ үү.\n\nАдмин хэсгийн “Засах” товчоор гарчиг, агуулгыг өөрчилнө.',img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTLbUGmGi4Wi0l77JcJICAxHjR_hsenF4yViMfZ11zlpxtClI3jEYVBd4&s=10',link:'',t:Date.now()},
+  {id:'poster2',cat:'news',title:'Шинэ пост 2',body:'Энд мэдээгээ бичнэ үү.\n\nАдмин хэсгийн “Засах” товчоор гарчиг, агуулгыг өөрчилнө.',img:'https://medievalists.gumlet.io/wp-content/uploads/2026/08/jaadugar.jpg?compress=true&format=webp&quality=80&w=376&dpr=2.6',link:'',t:Date.now()+1}];
 try{
   const done=JSON.parse(localStorage.getItem(KEY+'_once')||'[]');let ch=false;
   ONCE.forEach(p=>{if(!done.includes(p.id)){db.posts.push(p);done.push(p.id);ch=true}});
