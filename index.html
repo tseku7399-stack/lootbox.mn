@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аниме Сайт</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#fff; --text:#1f2430; --mute:#667085; --line:#e2e5ea;
+  --brand:#2563eb; --brand-d:#1d4ed8; --danger:#dc2626;
+  --sakura:#fbd5df; --mint:#cdeee1; --sun:#fdeec2;
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',Arial,sans-serif;color:var(--text);line-height:1.6;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+a{color:inherit}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid #93b4ff;outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px;width:100%}
+.display{font-weight:700;line-height:1.25}
+
+/* navbar */
+nav{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:18px;height:60px}
+.brand{font-size:1.2rem;font-weight:700;text-decoration:none;white-space:nowrap;color:var(--brand)}
+.links{display:flex;gap:2px;margin-left:auto;align-items:center}
+.links a{text-decoration:none;font-weight:600;padding:8px 13px;border-radius:8px;color:var(--mute)}
+.links a:hover{background:var(--bg);color:var(--text)}
+.links a.on{color:var(--brand);background:#eaf0ff}
+.links a.cta{background:var(--brand);color:#fff;margin-left:8px}
+.links a.cta:hover{background:var(--brand-d)}
+.burger{display:none;margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:8px;width:42px;height:42px;cursor:pointer;font-size:1.25rem}
+@media(max-width:860px){
+  .burger{display:block}
+  .links{display:none;position:absolute;top:60px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);flex-direction:column;align-items:stretch;padding:10px 18px 16px;gap:4px;margin:0}
+  .links.open{display:flex}
+  .links a{text-align:center}
+  .links a.cta{margin:6px 0 0}
+}
+
+main{flex:1;padding:28px 0 56px}
+h2.sec{font-size:1.5rem;margin:0 0 16px}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;text-decoration:none;display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .15s}
+.card:hover{box-shadow:0 4px 16px rgba(16,24,40,.1)}
+.cover{aspect-ratio:16/10;background:#e9ecf1;position:relative;display:grid;place-items:center;overflow:hidden}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cover.ph{font-size:3rem;font-weight:700;color:rgba(31,36,48,.55)}
+.card .b{padding:14px 16px 16px;display:grid;gap:8px;flex:1;align-content:start}
+.card h3{font-size:1.05rem;line-height:1.35}
+.card p{color:var(--mute);font-size:.92rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;gap:10px;align-items:center;font-size:.8rem;color:var(--mute);flex-wrap:wrap}
+.cat{border-radius:999px;padding:1px 10px;font-weight:600;color:var(--text);font-size:.78rem}
+.c-news{background:var(--sakura)}.c-ep{background:var(--mint)}.c-review{background:var(--sun)}.c-rec{background:#dbe4ff}
+
+.hero{display:grid;grid-template-columns:1.1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;text-decoration:none;margin-bottom:32px}
+.hero .cover{aspect-ratio:auto;min-height:300px}
+.hero .b{padding:26px;display:grid;gap:12px;align-content:center}
+.hero h1{font-size:clamp(1.5rem,3.4vw,2.1rem)}
+.hero p{color:var(--mute);display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:760px){.hero{grid-template-columns:1fr}.hero .cover{min-height:200px}}
+
+.filters{display:flex;gap:10px;margin-bottom:20px}
+.filters input{flex:1;max-width:340px;border:1px solid var(--line);border-radius:8px;padding:9px 14px;background:#fff}
+
+/* article */
+.article{max-width:720px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px}
+.article h1{font-size:clamp(1.5rem,4vw,2.2rem);margin:10px 0}
+.article img.full{display:block;width:100%;height:auto;border-radius:10px;margin:16px 0 22px;background:#eceef2}
+.article .text p{margin-bottom:1.1em;font-size:1.03rem}
+.back{display:inline-block;font-weight:600;margin-bottom:8px;color:var(--brand);text-decoration:none}
+.src{display:inline-block;margin-top:8px;font-weight:600;color:var(--brand)}
+@media(max-width:620px){.article{padding:18px}}
+
+/* forms / admin */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:22px}
+.panel h3{margin-bottom:12px;font-size:1.1rem}
+.form{display:grid;gap:14px}
+.form label{display:grid;gap:5px;font-weight:600;font-size:.92rem}
+.form input,.form textarea,.form select{border:1px solid #cfd4dc;padding:9px 11px;background:#fff;border-radius:8px;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:620px){.two{grid-template-columns:1fr}}
+.preview{max-width:240px;border-radius:8px;border:1px solid var(--line);display:none}
+.btn{border:1px solid var(--brand);background:var(--brand);color:#fff;padding:9px 18px;font-weight:600;cursor:pointer;border-radius:8px;text-decoration:none;display:inline-block}
+.btn:hover{background:var(--brand-d)}
+.btn.alt{background:#fff;color:var(--text);border-color:#cfd4dc}
+.btn.alt:hover{background:var(--bg)}
+.btn.sun{background:#eaf0ff;color:var(--brand);border-color:#eaf0ff}
+.btn.sm{padding:4px 12px;font-size:.85rem}
+.btn.del{background:#fff;color:var(--danger);border-color:#f3c3c3}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.list{display:grid;gap:8px}
+.item{display:flex;gap:12px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:10px 14px;flex-wrap:wrap}
+.item span.t{font-weight:600;flex:1;min-width:160px}
+.empty{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;max-width:520px}
+.empty h3{margin-bottom:6px}
+.empty .btn{margin-top:12px}
+.note{color:var(--mute);font-size:.85rem}
+
+footer{border-top:1px solid var(--line);padding:20px 0 30px;color:var(--mute);font-size:.88rem;background:#fff}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2430;color:#fff;padding:10px 20px;border-radius:999px;font-weight:600;z-index:50}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav">
+    <a class="brand" href="#/" id="brand"></a>
+    <button class="burger" id="burger" aria-label="Цэс нээх" aria-expanded="false">☰</button>
+    <div class="links" id="links">
+      <a href="#/" data-r="home">Нүүр</a>
+      <a href="#/c/news" data-r="c/news">Мэдээ</a>
+      <a href="#/c/ep" data-r="c/ep">Шинэ анги</a>
+      <a href="#/c/review" data-r="c/review">Шүүмж</a>
+      <a href="#/c/rec" data-r="c/rec">Санал болгох</a>
+      <a href="#/about" data-r="about">Тухай</a>
+      <a href="#/admin" data-r="admin" class="cta">Пост бичих</a>
+    </div>
+  </div>
+</nav>
+
+<main><div class="wrap" id="app"></div></main>
+
+<footer><div class="wrap" id="foot"></div></footer>
+
+<script>
+const CATS={news:'Мэдээ',ep:'Шинэ анги',review:'Шүүмж',rec:'Санал болгох'};
+const KEY='animeSite_v1';
+const app=document.getElementById('app');
+let cur='';
+try{cur=location.hash.replace(/^#\/?/,'')}catch{}
+
+/* ---------- data ---------- */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl=u=>/^(https?:\/\/|data:image\/)/i.test(u||'')?u:'';
+const fmt=t=>{const d=new Date(t);return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+function seed(){
+  const now=Date.now();
+  return {
+    settings:{name:'Аниме Сайт',about:'Энд өөрийнхөө тухай, сайтынхаа зорилгыг бичнэ үү. Админ хэсгийн “Сайтын тохиргоо”-оос энэ текстийг солино.'},
+    posts:[
+      {id:uid(),cat:'news',title:'Жишээ мэдээ: энд таны анхны пост гарна',body:'Энэ бол жишээ пост. “+ Пост бичих” товчийг дарж өөрийн мэдээг нэм.\n\nДараа нь админ хэсгээс энэ жишээ постуудыг устгаж болно.',img:'',link:'',t:now},
+      {id:uid(),cat:'ep',title:'Жишээ: шинэ ангийн тойм',body:'Шинэ ангийн хураангуйг энд бичнэ. Зураг нэмэхийн тулд компьютероосоо файл сонгох эсвэл холбоос өгч болно.',img:'',link:'',t:now-86400000},
+      {id:uid(),cat:'review',title:'Жишээ: аниме шүүмж',body:'Шүүмжээ параграф параграфаар бичээрэй. Хоосон мөр тавьвал шинэ параграф болно.',img:'',link:'',t:now-172800000}
+    ]
+  };
+}
+let db;
+try{db=JSON.parse(localStorage.getItem(KEY))}catch{db=null}
+if(!db||!Array.isArray(db.posts)){db=seed();save()}
+// Нэг удаа автоматаар нэмэгдэх пост (устгасан бол дахин нэмэгдэхгүй)
+const ONCE=[{id:'poster1',cat:'news',title:'Шинэ пост',body:'Энд мэдээгээ бичнэ үү.\n\nАдмин хэсгийн “Засах” товчоор гарчиг, агуулгыг өөрчилнө.',img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTLbUGmGi4Wi0l77JcJICAxHjR_hsenF4yViMfZ11zlpxtClI3jEYVBd4&s=10',link:'',t:Date.now()}];
+try{
+  const done=JSON.parse(localStorage.getItem(KEY+'_once')||'[]');let ch=false;
+  ONCE.forEach(p=>{if(!done.includes(p.id)){db.posts.push(p);done.push(p.id);ch=true}});
+  if(ch){save();localStorage.setItem(KEY+'_once',JSON.stringify(done))}
+}catch{}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(db));return true}
+  catch{toast('Хадгалах зай дүүрсэн. Зургийг жижигрүүл эсвэл хуучин постоо устга.');return false}
+}
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;t.setAttribute('role','status');
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2800);
+}
+const sorted=()=>[...db.posts].sort((a,b)=>b.t-a.t);
+
+/* ---------- shared bits ---------- */
+function cover(p,cls=''){
+  const u=safeUrl(p.img);
+  if(u)return `<div class="cover ${cls}"><img src="${esc(u)}" alt="${esc(p.title)}" referrerpolicy="no-referrer" onerror="this.remove()"></div>`;
+  const bg={news:'var(--sakura)',ep:'var(--mint)',review:'var(--sun)',rec:'#dbe4ff'}[p.cat]||'var(--sun)';
+  return `<div class="cover ph ${cls}" style="background:${bg}">${esc((p.title||'?').trim().charAt(0).toUpperCase())}</div>`;
+}
+const excerpt=b=>esc((b||'').replace(/\s+/g,' ').slice(0,220));
+const catTag=c=>`<span class="cat c-${c}">${esc(CATS[c]||'')}</span>`;
+function card(p){
+  return `<a class="card" href="#/p/${p.id}">${cover(p)}<div class="b"><div class="meta">${catTag(p.cat)}<span>${fmt(p.t)}</span></div><h3>${esc(p.title)}</h3><p>${excerpt(p.body)}</p></div></a>`;
+}
+function emptyState(msg){
+  return `<div class="empty"><h3>Пост алга</h3><p>${msg}</p><a class="btn sun" href="#/admin">Анхны постоо бич</a></div>`;
+}
+
+/* ---------- pages ---------- */
+function home(){
+  const list=sorted();
+  if(!list.length){app.innerHTML=`<h2 class="sec display">Тавтай морил</h2>`+emptyState('Одоогоор нийтлэгдсэн пост байхгүй байна.');return}
+  const [f,...rest]=list;
+  app.innerHTML=`
+    <a class="hero" href="#/p/${f.id}">${cover(f)}<div class="b"><div class="meta">${catTag(f.cat)}<span>${fmt(f.t)}</span></div><h1 class="display">${esc(f.title)}</h1><p>${excerpt(f.body)}</p></div></a>
+    ${rest.length?`<h2 class="sec display">Сүүлийн постууд</h2><div class="grid">${rest.slice(0,12).map(card).join('')}</div>`:''}`;
+}
+
+function category(c){
+  if(!CATS[c])return notFound();
+  const q=(category.q||'').toLowerCase();
+  const all=sorted().filter(p=>p.cat===c);
+  const list=all.filter(p=>!q||(p.title+' '+p.body).toLowerCase().includes(q));
+  app.innerHTML=`<h2 class="sec display">${esc(CATS[c])}</h2>
+    <div class="filters"><input id="q" type="search" placeholder="Хайх" aria-label="Хайх" value="${esc(category.q||'')}"></div>
+    ${list.length?`<div class="grid">${list.map(card).join('')}</div>`:(all.length?'<div class="empty"><h3>Олдсонгүй</h3><p>Өөр үгээр хайж үзнэ үү.</p></div>':emptyState('Энэ ангилалд пост алга.'))}`;
+  const inp=document.getElementById('q');
+  inp.oninput=()=>{category.q=inp.value;const pos=inp.selectionStart;category(c);const n=document.getElementById('q');n.focus();n.setSelectionRange(pos,pos)};
+}
+
+function post(id){
+  const p=db.posts.find(x=>x.id===id);
+  if(!p)return notFound();
+  const paras=(p.body||'').split(/\n{2,}/).map(s=>`<p>${esc(s).replace(/\n/g,'<br>')}</p>`).join('');
+  app.innerHTML=`<article class="article">
+    <a class="back" href="#/c/${p.cat}">← ${esc(CATS[p.cat]||'Буцах')}</a>
+    <div class="meta">${catTag(p.cat)}<span>${fmt(p.t)}</span></div>
+    <h1 class="display">${esc(p.title)}</h1>
+    ${safeUrl(p.img)?`<img class="full" src="${esc(safeUrl(p.img))}" alt="${esc(p.title)}" referrerpolicy="no-referrer" onerror="this.outerHTML='<p class=note>Зураг ачаалагдсангүй. Холбоос нь зургийн шууд холбоос биш байж магадгүй. Постыг засаад зургийг компьютероос оруулна уу.</p>'">`:''}
+    <div class="text">${paras}</div>
+    ${safeUrl(p.link)?`<a class="src" href="${esc(p.link)}" target="_blank" rel="noopener">Эх сурвалж ↗</a>`:''}
+  </article>`;
+  document.title=p.title+' | '+db.settings.name;
+}
+
+function about(){
+  const paras=(db.settings.about||'').split(/\n{2,}/).map(s=>`<p>${esc(s).replace(/\n/g,'<br>')}</p>`).join('');
+  app.innerHTML=`<article class="article"><h1 class="display">Тухай</h1><div class="text">${paras}</div></article>`;
+}
+
+function notFound(){
+  app.innerHTML=`<div class="empty"><h3>Хуудас олдсонгүй</h3><p>Хаяг буруу эсвэл пост устсан байж магадгүй.</p><a class="btn sun" href="#/">Нүүр хуудас руу</a></div>`;
+}
+
+/* ---------- admin ---------- */
+let imgData='';
+function admin(editId){
+  const p=editId?db.posts.find(x=>x.id===editId):null;
+  imgData=p&&p.img&&p.img.startsWith('data:')?p.img:'';
+  const urlVal=p&&p.img&&!p.img.startsWith('data:')?p.img:'';
+  app.innerHTML=`
+  <h2 class="sec display">${p?'Пост засах':'Пост бичих'}</h2>
+  <div class="panel"><form class="form" id="f">
+    <label>Гарчиг<input name="title" required maxlength="140" value="${esc(p?.title)}"></label>
+    <div class="two">
+      <label>Ангилал<select name="cat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${p?.cat===k?'selected':''}>${v}</option>`).join('')}</select></label>
+      <label>Эх сурвалжийн холбоос (заавал биш)<input name="link" type="url" placeholder="https://" value="${esc(p?.link)}"></label>
+    </div>
+    <label>Агуулга<textarea name="body" rows="9" required>${esc(p?.body)}</textarea></label>
+    <span class="note">Хоосон мөр тавьвал шинэ параграф болно.</span>
+    <div class="two">
+      <label>Зураг (компьютероос)<input id="file" type="file" accept="image/*"></label>
+      <label>эсвэл зургийн холбоос<input name="imgurl" type="url" placeholder="https://" value="${esc(urlVal)}"></label>
+    </div>
+    <img class="preview" id="prev" alt="Зургийн урьдчилсан харагдац">
+    <div class="row">
+      <button class="btn" type="submit">${p?'Хадгалах':'Нийтлэх'}</button>
+      ${p?'<a class="btn alt" href="#/admin" style="text-decoration:none">Болих</a>':''}
+      <button class="btn alt" type="button" id="rmimg">Зураг арилгах</button>
+    </div>
+  </form></div>
+
+  <div class="panel"><h3>Миний постууд (${db.posts.length})</h3>
+    <div class="list">${sorted().map(x=>`<div class="item"><span class="t">${esc(x.title)}</span><span class="note">${esc(CATS[x.cat])} · ${fmt(x.t)}</span>
+      <span class="row"><a class="btn alt sm" href="#/p/${x.id}" style="text-decoration:none">Харах</a><a class="btn sun sm" href="#/admin/${x.id}" style="text-decoration:none">Засах</a><button class="btn del sm" data-del="${x.id}">Устгах</button></span></div>`).join('')||'<p class="note">Пост алга.</p>'}</div>
+    ${db.posts.length?'<div class="row" style="margin-top:14px"><button class="btn alt sm" id="wipe">Бүх постыг устгах</button></div>':''}
+  </div>
+
+  <div class="panel"><h3>Сайтын тохиргоо</h3>
+    <form class="form" id="s">
+      <label>Сайтын нэр<input name="name" required maxlength="40" value="${esc(db.settings.name)}"></label>
+      <label>“Тухай” хуудасны текст<textarea name="about" rows="5">${esc(db.settings.about)}</textarea></label>
+      <div><button class="btn sun" type="submit">Тохиргоо хадгалах</button></div>
+    </form>
+  </div>
+
+  <div class="panel"><h3>Нөөцлөлт</h3>
+    <p class="note" style="margin-bottom:12px">Постууд зөвхөн энэ хөтөч дээр хадгалагддаг. Хөтчийн өгөгдлөө цэвэрлэхээс өмнө нөөц файл татаж аваарай.</p>
+    <div class="row"><button class="btn alt" id="exp">Нөөц татах (.json)</button>
+    <label class="btn alt" style="cursor:pointer">Нөөц сэргээх<input id="imp" type="file" accept="application/json" hidden></label></div>
+  </div>`;
+
+  const prev=document.getElementById('prev');
+  const showPrev=src=>{if(src){prev.src=src;prev.style.display='block'}else{prev.removeAttribute('src');prev.style.display='none'}};
+  showPrev(imgData||urlVal);
+
+  document.getElementById('file').onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{imgData=await shrink(file);showPrev(imgData);document.querySelector('[name=imgurl]').value=''}
+    catch{toast('Зургийг уншиж чадсангүй.')}
+  };
+  document.querySelector('[name=imgurl]').oninput=e=>{if(e.target.value){imgData='';showPrev(safeUrl(e.target.value))}};
+  document.getElementById('rmimg').onclick=()=>{imgData='';document.querySelector('[name=imgurl]').value='';document.getElementById('file').value='';showPrev('')};
+
+  document.getElementById('f').onsubmit=e=>{
+    e.preventDefault();
+    const f=new FormData(e.target);
+    const rec={
+      id:p?p.id:uid(),t:p?p.t:Date.now(),
+      title:f.get('title').trim(),cat:f.get('cat'),body:f.get('body').trim(),
+      link:safeUrl(f.get('link')),img:imgData||safeUrl(f.get('imgurl'))
+    };
+    const prevDb=JSON.stringify(db);
+    if(p)db.posts=db.posts.map(x=>x.id===p.id?rec:x);else db.posts.push(rec);
+    if(save()){toast(p?'Хадгаллаа':'Нийтэллээ');go('/p/'+rec.id)}
+    else db=JSON.parse(prevDb);
+  };
+  document.getElementById('s').onsubmit=e=>{
+    e.preventDefault();const f=new FormData(e.target);
+    db.settings={name:f.get('name').trim()||'Аниме Сайт',about:f.get('about')};
+    if(save()){applySettings();toast('Тохиргоо хадгаллаа')}
+  };
+  app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+    if(!confirm('Энэ постыг устгах уу?'))return;
+    db.posts=db.posts.filter(x=>x.id!==b.dataset.del);save();admin();
+  });
+  const w=document.getElementById('wipe');
+  if(w)w.onclick=()=>{if(confirm('Бүх постыг устгах уу? Үүнийг буцаах боломжгүй.')){db.posts=[];save();admin()}};
+  document.getElementById('exp').onclick=()=>{
+    const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='anime-site-backup.json';a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  };
+  document.getElementById('imp').onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{
+      const j=JSON.parse(await file.text());
+      if(!j||!Array.isArray(j.posts)||!j.settings)throw 0;
+      if(!confirm('Одоо байгаа бүх мэдээллийг нөөцөөр солих уу?'))return;
+      db={settings:{name:String(j.settings.name||'Аниме Сайт'),about:String(j.settings.about||'')},
+        posts:j.posts.filter(x=>x&&x.id&&x.title&&CATS[x.cat]).map(x=>({id:String(x.id),cat:x.cat,title:String(x.title),body:String(x.body||''),img:safeUrl(x.img),link:safeUrl(x.link),t:Number(x.t)||Date.now()}))};
+      save();applySettings();toast('Сэргээлээ');admin();
+    }catch{toast('Нөөц файл буруу байна.')}
+  };
+}
+
+function shrink(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onerror=rej;
+    r.onload=()=>{
+      const im=new Image();
+      im.onerror=rej;
+      im.onload=()=>{
+        const max=1000,k=Math.min(1,max/Math.max(im.width,im.height));
+        const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        res(c.toDataURL('image/jpeg',.8));
+      };
+      im.src=r.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+/* ---------- chrome + router ---------- */
+function applySettings(){
+  const n=esc(db.settings.name);
+  document.getElementById('brand').innerHTML=n;
+  document.getElementById('foot').innerHTML=`© ${new Date().getFullYear()} ${n}`;
+  document.title=db.settings.name;
+}
+const links=document.getElementById('links'),burger=document.getElementById('burger');
+burger.onclick=()=>{const o=links.classList.toggle('open');burger.setAttribute('aria-expanded',o)};
+
+function router(){
+  const h=cur;
+  const [a,b]=h.split('/');
+  links.classList.remove('open');burger.setAttribute('aria-expanded','false');
+  category.q=a==='c'&&router.last===h?category.q:'';
+  router.last=h;
+  let key='home';
+  if(!a||a==='')home();
+  else if(a==='c'){key='c/'+b;category(b)}
+  else if(a==='p'){key='';post(b)}
+  else if(a==='about'){key='about';about()}
+  else if(a==='admin'){key='admin';admin(b)}
+  else notFound();
+  if(!(a==='p'))document.title=(a==='c'&&CATS[b]?CATS[b]+' | ':'')+db.settings.name;
+  links.querySelectorAll('a').forEach(l=>l.classList.toggle('on',l.dataset.r===key&&!l.classList.contains('cta')));
+  window.scrollTo(0,0);
+}
+function go(path){
+  cur=String(path).replace(/^#?\/?/,'');
+  try{history.pushState(null,'','#/'+cur)}catch{}
+  router();
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[href^="#/"],a[href="#"]');
+  if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey||a.target==='_blank')return;
+  e.preventDefault();
+  go(a.getAttribute('href'));
+});
+function fromUrl(){try{cur=location.hash.replace(/^#\/?/,'')}catch{cur=''}router()}
+window.addEventListener('popstate',fromUrl);
+window.addEventListener('hashchange',fromUrl);
+applySettings();router();
+</script>
+</body>
+</html>
